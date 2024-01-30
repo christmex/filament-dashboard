@@ -17,7 +17,7 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use BezhanSalleh\FilamentLanguageSwitch\FilamentLanguageSwitchPlugin;
+
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -59,7 +59,12 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
-                FilamentLanguageSwitchPlugin::make()
-            ]);
+                
+            ])
+            ->topNavigation()
+            ->unsavedChangesAlerts()
+            ->breadcrumbs(false)
+            ->brandLogo(asset('logo_basic_digital.svg'))
+            ->brandLogoHeight('1rem');
     }
 }

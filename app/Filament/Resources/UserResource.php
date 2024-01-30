@@ -8,12 +8,16 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Tabs;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Split;
 use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Filters\TernaryFilter;
@@ -27,61 +31,83 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-users';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Tabs::make('Label')
-                ->tabs([
-                    Tabs\Tab::make('User Login')
-                        ->schema([
-                            TextInput::make('name')
-                                ->required()
-                                ->maxLength(255),
-                            TextInput::make('email')
-                                ->email()
-                                ->required()
-                                ->unique(ignoreRecord:true)
-                                ->maxLength(255),
-                            TextInput::make('password')
-                                ->password()
-                                ->dehydrateStateUsing(fn (string $state): string => Hash::make($state))
-                                ->dehydrated(fn (?string $state): bool => filled($state))
-                                ->required(fn (string $operation): bool => $operation === 'create'),
-                            Select::make('roles')
-                                ->relationship('roles', 'name')
-                                ->multiple()
-                                ->preload()
-                                ->searchable(),
-                    ]),
-                    Tabs\Tab::make('User Details')
-                        ->schema([
-                            TextInput::make('citizenship_number')
-                                ->unique(ignoreRecord:true)
-                                ->maxLength(255),
-                            TextInput::make('born_place'),
-                            DatePicker::make('born_date'),
-                    ]),
-                    Tabs\Tab::make('Employee Details')
-                        ->schema([
-                            DatePicker::make('join_date'),
-                            DatePicker::make('finish_contract'),
-                            DatePicker::make('permanent_date'),
-                            DatePicker::make('bpjs_join_date'),
-                            DatePicker::make('jht_join_date'),
-                            DatePicker::make('kemnaker_join_date'),
-                            DatePicker::make('read_employee_terms_date'),
-                            Textarea::make('notes')
-                                ->columnSpanFull(),
+                Split::make([
+                    Group::make([
+                        Tabs::make('Label')
+                        ->persistTabInQueryString()
+                        ->tabs([
+                            Tabs\Tab::make('User Login')
+                                ->schema([
+                                    TextInput::make('name')
+                                        ->required()
+                                        ->maxLength(255),
+                                    TextInput::make('email')
+                                        ->email()
+                                        ->required()
+                                        ->unique(ignoreRecord:true)
+                                        ->maxLength(255),
+                                    Forms\Components\TextInput::make('password')
+                                        ->helperText(new HtmlString('Default Password <strong>(mantapjiwa00)</strong>'))
+                                        ->default('mantapjiwa00')
+                                        ->password()
+                                        ->revealable()
+                                        // ->required()
+                                        ->maxLength(255)
+                                        ->dehydrateStateUsing(fn (string $state): string => bcrypt($state))
+                                        ->dehydrated(fn (?string $state): bool => filled($state))
+                                        ->required(fn (string $operation): bool => $operation === 'create'),
+                                    Forms\Components\Select::make('roles')
+                                        ->relationship('roles', 'name')
+                                        ->multiple()
+                                        ->preload()
+                                        ->searchable(),
+                            ]),
+                            Tabs\Tab::make('Details')
+                                ->schema([
+                                    TextInput::make('citizenship_number')
+                                        ->unique(ignoreRecord:true)
+                                        ->maxLength(255),
+                                    TextInput::make('born_place'),
+                                    DatePicker::make('born_date'),
+                            ]),
+                        ])
+                        ->columnSpanFull()
+                        ->columns([
+                            'sm' => 1,
+                            'xl' => 2,
                         ]),
+                        Forms\Components\Section::make('Status')
+                            ->collapsed()
+                            ->columns(2)
+                            ->schema([
+                                DatePicker::make('bpjs_join_date'),
+                                DatePicker::make('jht_join_date'),
+                                DatePicker::make('kemnaker_join_date'),
+                                DatePicker::make('read_employee_terms_date'),
+                                Textarea::make('notes')->columnSpanFull(),
+                            ])
+                    ]),
+
+                    Group::make()
+                        ->schema([
+                            Forms\Components\Section::make('Employee Work Periode')
+                                ->schema([
+                                    DatePicker::make('join_date'),
+                                    DatePicker::make('finish_contract'),
+                                    DatePicker::make('permanent_date'),
+                                ])
+                                // ->columns(2)
+                        ])
+                        ->grow(false),
                 ])
-                ->columnSpanFull()
-                ->columns([
-                    'sm' => 1,
-                    'xl' => 3,
-                ])
+                ->from('md')
+                ->columnSpanFull(),
             ]);
     }
 
@@ -113,10 +139,12 @@ class UserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextInputColumn::make('join_date')
                     ->type('date')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextInputColumn::make('finish_contract')
                     ->type('date')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextInputColumn::make('bpjs_join_date')
                     ->type('date')
                     ->sortable()
@@ -170,7 +198,7 @@ class UserResource extends Resource
                     false: fn (Builder $query) => $query->where('finish_contract','!=',NULL),
                     blank: fn (Builder $query) => $query,
                 )
-            ])
+            ], layout: FiltersLayout::Modal)
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Impersonate::make(),
