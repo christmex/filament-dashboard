@@ -145,10 +145,8 @@ class UserResource extends Resource
                     ->type('date')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextInputColumn::make('join_date')
-                    ->type('date')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('join_date')
+                    ->sortable(),
                 Tables\Columns\TextInputColumn::make('finish_contract')
                     ->type('date')
                     ->sortable()
@@ -173,7 +171,8 @@ class UserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    // ->dateTime()
+                    ->since()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
@@ -197,15 +196,16 @@ class UserResource extends Resource
                     ->withIndicator(),
                 Tables\Filters\TrashedFilter::make(),
                 SelectFilter::make('company_id')
-                    ->options(function(){
-                        $getCompany = Company::all()->pluck('name','id')->toArray() + ['' => 'No Company'];
-                        return $getCompany;
-                    })
+                    // ->options(function(){
+                    //     $getCompany = Company::all()->pluck('name','id')->toArray() + ['' => 'No Company'];
+                    //     return $getCompany;
+                    // })
                     ->label('Current Company')
                     ->searchable()
-                    ->multiple(),
-                    // ->preload()
-                    // ->relationship('company', 'name'),
+                    ->multiple()
+                    ->preload()
+                    ->relationship('company', 'name')
+                    ,
                 TernaryFilter::make('employee_status')
                     ->placeholder('All')
                     ->trueLabel('Only Permanent')
@@ -217,11 +217,13 @@ class UserResource extends Resource
                     )
             ], layout: FiltersLayout::Modal)
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Impersonate::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Impersonate::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ForceDeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
