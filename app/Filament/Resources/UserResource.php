@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use Filament\Forms;
 use App\Models\User;
 use Filament\Tables;
+use App\Models\Company;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
@@ -19,6 +20,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Filters\TernaryFilter;
 use App\Filament\Resources\UserResource\Pages;
@@ -75,6 +77,10 @@ class UserResource extends Resource
                                         ->maxLength(255),
                                     TextInput::make('born_place'),
                                     DatePicker::make('born_date'),
+                                    Select::make('company_id')
+                                        ->label('Current Company')
+                                        ->unique(ignoreRecord: true)
+                                        ->relationship('company','name')
                             ]),
                         ])
                         ->columnSpanFull()
@@ -133,6 +139,8 @@ class UserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('citizenship_number')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('company.name')
+                    ->searchable(),
                 Tables\Columns\TextInputColumn::make('permanent_date')
                     ->type('date')
                     ->sortable()
@@ -188,16 +196,25 @@ class UserResource extends Resource
                     ])
                     ->withIndicator(),
                 Tables\Filters\TrashedFilter::make(),
-                
+                SelectFilter::make('company_id')
+                    ->options(function(){
+                        $getCompany = Company::all()->pluck('name','id')->toArray() + ['' => 'No Company'];
+                        return $getCompany;
+                    })
+                    ->label('Current Company')
+                    ->searchable()
+                    ->multiple(),
+                    // ->preload()
+                    // ->relationship('company', 'name'),
                 TernaryFilter::make('employee_status')
-                ->placeholder('All')
-                ->trueLabel('Only Permanent')
-                ->falseLabel('Only Cotract')
-                ->queries(
-                    true: fn (Builder $query) => $query->where('finish_contract',NULL),
-                    false: fn (Builder $query) => $query->where('finish_contract','!=',NULL),
-                    blank: fn (Builder $query) => $query,
-                )
+                    ->placeholder('All')
+                    ->trueLabel('Only Permanent')
+                    ->falseLabel('Only Cotract')
+                    ->queries(
+                        true: fn (Builder $query) => $query->where('finish_contract',NULL),
+                        false: fn (Builder $query) => $query->where('finish_contract','!=',NULL),
+                        blank: fn (Builder $query) => $query,
+                    )
             ], layout: FiltersLayout::Modal)
             ->actions([
                 Tables\Actions\EditAction::make(),

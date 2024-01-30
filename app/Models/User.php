@@ -9,8 +9,10 @@ use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements FilamentUser
@@ -24,6 +26,7 @@ class User extends Authenticatable implements FilamentUser
      */
     protected $fillable = [
         'name',
+        'company_id',
         'email',
         'password',
         'notes',
@@ -59,10 +62,15 @@ class User extends Authenticatable implements FilamentUser
         'password' => 'hashed',
     ];
 
+
     public static $domain = '@sekolahbasic.sch.id';
 
     public function canAccessPanel(Panel $panel): bool
     {
         return str_ends_with($this->email, $this->domain);
+    }
+
+    public function company() :BelongsTo{
+        return $this->belongsTo(Company::class);
     }
 }
