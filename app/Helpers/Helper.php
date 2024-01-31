@@ -6,6 +6,29 @@ class Helper {
 
     public static $superUserEmail = 'super@sekolahbasic.sch.id';
 
+    public static function getSchoolYears() :array{
+        $start = 2023;
+        $range = 10;
+        $data = [];
+        for ($i=1; $i <= $range; $i++) { 
+            $data[$i] = $start.'/'.$start+1;
+            $start++;
+        }
+        return $data;
+    }
+    public static function getSchoolYearById($id) :string{
+        return self::getSchoolYears()[$id];
+    }
+    public static function getTerms() :array{
+        return [
+            '1' => 'First Semester',
+            '2' => 'Second Semester',
+        ];
+    }
+    public static function getTermById($id) :string{
+        return self::getTerms()[$id];
+    }
+    
     public static function getCompanies() :array
     {
         return [

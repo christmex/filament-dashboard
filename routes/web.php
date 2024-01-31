@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\Helper;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,5 +15,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/debug',function(){
+    dd(Helper::getSchoolYears());
     // dd(auth()->user()->canImpersonate());
 });
