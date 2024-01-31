@@ -222,9 +222,9 @@ class UserResource extends Resource
                     )
             ], layout: FiltersLayout::Modal)
             ->actions([
+                Impersonate::make(),
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make(),
-                    Impersonate::make(),
                     Tables\Actions\DeleteAction::make(),
                     Tables\Actions\ForceDeleteAction::make(),
                     Tables\Actions\RestoreAction::make(),

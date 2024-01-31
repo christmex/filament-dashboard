@@ -24,7 +24,7 @@
     php artisan migrate
 
     #for creating permission and policy file 
-    php artisan shield:generate --resource= 
+    php artisan shield:generate --resource=UserResource,StudentResource,CompanyResource,ClassroomResource
 
     #ignore the changes via git
     git restore .
