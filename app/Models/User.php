@@ -10,9 +10,10 @@ use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements FilamentUser
@@ -72,5 +73,13 @@ class User extends Authenticatable implements FilamentUser
 
     public function company() :BelongsTo{
         return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * Get the comments for the blog post.
+     */
+    public function mainTeachers(): HasMany
+    {
+        return $this->hasMany(MainTeacher::class);
     }
 }

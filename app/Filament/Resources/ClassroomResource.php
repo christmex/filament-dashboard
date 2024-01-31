@@ -33,7 +33,7 @@ class ClassroomResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('classroom_name')
+                Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('fase'),
                 Tables\Columns\TextColumn::make('school_level'),
@@ -95,7 +95,7 @@ class ClassroomResource extends Resource
     public static function getForm(): array 
     {
         return [
-            Forms\Components\TextInput::make('classroom_name')
+            Forms\Components\TextInput::make('name')
                 ->required()
                 ->placeholder('Ex: Caleb 1 | Abraham IPS 1')
                 ->unique(ignoreRecord: true)

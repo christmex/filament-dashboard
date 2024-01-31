@@ -16,8 +16,8 @@ class Classroom extends Model
         'is_moving_class' => 'boolean',
     ];
 
-    public function setClassroomNameAttribute($value)
+    public function setNameAttribute($value)
     {
-        $this->attributes['classroom_name'] = ucwords($value);
+        $this->attributes['name'] = ucwords($value);
     }
 }

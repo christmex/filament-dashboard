@@ -1,6 +1,7 @@
 <?php
 
 use App\Helpers\Helper;
+use App\Models\Classroom;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,6 +16,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/debug',function(){
-    dd(Helper::getSchoolYears());
+    dd(Classroom::all()->pluck('name','id')->toArray());
     // dd(auth()->user()->canImpersonate());
 });

@@ -5,8 +5,11 @@ namespace App\Filament\Resources;
 use Filament\Forms;
 use App\Models\User;
 use Filament\Tables;
+use App\Helpers\Helper;
 use App\Models\Company;
+use Filament\Forms\Get;
 use Filament\Forms\Form;
+use App\Models\Classroom;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Illuminate\Support\HtmlString;
@@ -16,7 +19,10 @@ use Filament\Forms\Components\Split;
 use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\Rules\Unique;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Forms\Components\DatePicker;
@@ -26,6 +32,7 @@ use Filament\Tables\Filters\TernaryFilter;
 use App\Filament\Resources\UserResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
+use Filament\Resources\RelationManagers\RelationManager;
 use App\Filament\Resources\UserResource\RelationManagers;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
@@ -84,25 +91,86 @@ class UserResource extends Resource
                                     DatePicker::make('born_date'),
                                     Select::make('company_id')
                                         ->label('Current Company')
-                                        ->unique(ignoreRecord: true)
                                         ->relationship('company','name')
                             ]),
+                            Tabs\Tab::make('Main Teacher')
+                                ->hiddenOn('edit')
+                                ->schema([
+                                    Repeater::make('mainTeachers')
+                                        ->relationship()
+                                        ->maxItems(function(string $operation){
+                                            if($operation == 'create'){
+                                                return 1;
+                                            }
+                                        })
+                                        ->schema([
+                                            Select::make('classroom_id')
+                                                ->label('Classroom')
+                                                ->required()
+                                                ->relationship('classroom','name')
+                                                // ->unique(modifyRuleUsing: function (Unique $rule, Get $get,$livewire, $state) {
+                                                //     // dd($state);
+                                                //     return $rule->where('school_year', $get('school_year'))
+                                                //                 ->where('school_term', $get('school_term'))
+                                                //                 ->where('user_id', $livewire->data['id'])
+                                                //                 ->where('classroom_id', $state)
+                                                //                 ;
+                                                // })
+                                                // ->unique(modifyRuleUsing: function (Unique $rule, Get $get, $state) {
+                                                //     return($rule->where('school_year', $get('school_year'))
+                                                //                 ->where('school_term', $get('school_term'))
+                                                //                 );
+                                                // }, ignoreRecord : true)
+                                                ->unique(modifyRuleUsing: function (Unique $rule,$state, Get $get) {
+                                                    // dd($livewire);
+                                                    return $rule
+                                                            ->where('school_term', $get('school_term'))
+                                                            ->where('school_year', $get('school_year'))
+                                                            // ->where('classroom_id',$state)
+                                                            ;
+                                                })
+
+                                                ->createOptionForm(ClassroomResource::getForm()),
+                                            Select::make('school_year')
+                                                ->required()
+                                                ->live(onBlur: true)
+                                                // ->unique(modifyRuleUsing: function (Unique $rule, Get $get,$livewire, $state) {
+                                                //     return $rule->where('classroom_id', $get('classroom_id'))
+                                                //                 ->where('school_term', $get('school_term'))
+                                                //                 ;
+                                                // })
+                                                ->options(fn()=>Helper::getSchoolYears()),
+                                            Select::make('school_term')
+                                                ->required()
+                                                ->live(onBlur: true)
+                                                // ->unique(modifyRuleUsing: function (Unique $rule, Get $get,$livewire) {
+                                                //     return $rule->where('school_year', $get('school_year'))
+                                                //                 ->where('classroom_id', $get('classroom_id'))
+                                                //                 ->where('user_id', $livewire->data['id']);
+                                                // },ignoreRecord:true)
+                                                ->options(fn()=>Helper::getTerms())
+                                        ])
+                                        ->columns(3)
+                                        ->columnSpanFull()
+                                        
+                                ])
                         ])
                         ->columnSpanFull()
                         ->columns([
                             'sm' => 1,
                             'xl' => 2,
                         ]),
-                        Forms\Components\Section::make('Status')
-                            ->collapsed()
-                            ->columns(2)
-                            ->schema([
-                                DatePicker::make('bpjs_join_date'),
-                                DatePicker::make('jht_join_date'),
-                                DatePicker::make('kemnaker_join_date'),
-                                DatePicker::make('read_employee_terms_date'),
-                                Textarea::make('notes')->columnSpanFull(),
-                            ])
+                        // Forms\Components\Section::make('Status')
+                        //     ->collapsed()
+                        //     ->columns(2)
+                        //     ->schema([
+                        //         DatePicker::make('bpjs_join_date'),
+                        //         DatePicker::make('jht_join_date'),
+                        //         DatePicker::make('kemnaker_join_date'),
+                        //         DatePicker::make('read_employee_terms_date'),
+                        //         Textarea::make('notes')->columnSpanFull(),
+                        //     ]),
+                        
                     ]),
 
                     Group::make()

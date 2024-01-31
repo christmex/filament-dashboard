@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('classrooms', function (Blueprint $table) {
+        Schema::create('main_teachers', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('fase')->nullable();
-            $table->tinyInteger('school_level')->nullable();
-            $table->boolean('is_moving_class')->default(false);
-            $table->softDeletes();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('classroom_id')->nullable()->constrained('classrooms')->nullOnDelete();
+            $table->tinyInteger('school_year');
+            $table->tinyInteger('school_term');
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('classrooms');
+        Schema::dropIfExists('main_teachers');
     }
 };
