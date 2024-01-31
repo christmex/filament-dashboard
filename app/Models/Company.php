@@ -13,12 +13,5 @@ class Company extends Model
 
     protected $guarded = [];
     
-    protected function name(): Attribute
-    {
-        return Attribute::make(
-            get: fn (string $value) => Str::title($value),
-            set: fn (string $value) => Str::title($value),
-        );
-    }
 
 }
