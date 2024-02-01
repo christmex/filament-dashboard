@@ -156,7 +156,7 @@ class StudentResource extends Resource
                             $data['class_of'] = auth()->user()->mainTeachers->first()->id;
                         }
                         $studentIds = Helper::getStudentIdsByMainTeacherId($data['class_of']);
-                        return $query->whereIn('id',$studentIds);
+                        return $query->whereIn('id',array_unique($studentIds));
                     })
             ], layout: FiltersLayout::Modal)
             // ->filtersFormColumns(3)
@@ -238,7 +238,7 @@ class StudentResource extends Resource
                             if($data['set_current_classroom']){
                                 $update['classroom_id'] = $data['classroom_id'];
                             }
-                            Student::whereIn('id',$studentIds)->update($update);
+                            Student::whereIn('id',array_unique($studentIds))->update($update);
 
                             DB::commit();
 

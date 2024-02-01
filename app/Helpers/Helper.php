@@ -87,7 +87,7 @@ class Helper {
             ->get()
             ->pluck('student_id')
             ->toArray();
-        return $studentIds;
+        return array_unique($studentIds);
     }
 
 }

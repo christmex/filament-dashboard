@@ -53,7 +53,7 @@ class Student extends Model
                 ->get()
                 ->pluck('student_id')
                 ->toArray();
-            $query->whereIn('id',$studentIds);
+            $query->whereIn('id',array_unique($studentIds));
         }
     }
 
