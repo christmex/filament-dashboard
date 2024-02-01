@@ -6,8 +6,10 @@ use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 
 class Student extends Model
 {
@@ -25,5 +27,11 @@ class Student extends Model
 
     public function company() :BelongsTo{
         return $this->belongsTo(Company::class);
+    }
+    public function classroom() :BelongsTo{
+        return $this->belongsTo(Classroom::class);
+    }
+    public function classrooms() :HasMany{
+        return $this->hasMany(StudentClassroom::class);
     }
 }

@@ -5,16 +5,28 @@ namespace App\Filament\Resources;
 use Filament\Forms;
 use Filament\Tables;
 use App\Helpers\Helper;
+use App\Models\Company;
 use App\Models\Student;
+use Filament\Forms\Get;
 use Filament\Forms\Form;
+use App\Models\Classroom;
 use Filament\Tables\Table;
+use App\Models\MainTeacher;
+use App\Models\StudentClassroom;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Tabs;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Split;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Illuminate\Validation\Rules\Unique;
+use Filament\Notifications\Notification;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\ToggleButtons;
 use App\Filament\Resources\StudentResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\StudentResource\RelationManagers;
@@ -47,6 +59,9 @@ class StudentResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('company.name')
                     ->label('Current School')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('classroom.name')
+                    ->label('Current Classroom')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('sex')
                     ->formatStateUsing(fn (string $state): string => Helper::getGenderById($state))
@@ -115,8 +130,14 @@ class StudentResource extends Resource
                     ->searchable()
                     ->multiple()
                     ->preload()
-                    ->relationship('company', 'name')
-            ])
+                    ->relationship('company', 'name'),
+                SelectFilter::make('classroom_id')
+                    ->label('Current Classroom')
+                    ->searchable()
+                    ->multiple()
+                    ->preload()
+                    ->relationship('classroom', 'name')
+            ], layout: FiltersLayout::Modal)
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make(),
@@ -126,6 +147,92 @@ class StudentResource extends Resource
                 ])
             ])
             ->bulkActions([
+                Tables\Actions\BulkAction::make('classrooms')
+                    ->label('Manage Classroom')
+                    ->form([
+                        Group::make([
+                            Select::make('company_id')
+                                ->label('School')
+                                ->required()
+                                ->options(fn()=>Company::all()->pluck('name','id')->toArray()),
+                            ToggleButtons::make('set_current_school')
+                                ->label('Set this school as current school?')
+                                ->boolean()
+                                ->default(true)
+                                ->grouped(),
+                            Select::make('classroom_id')
+                                ->label('Classroom')
+                                ->required()
+                                ->options(fn()=>Classroom::all()->pluck('name','id')->toArray()),
+                            ToggleButtons::make('set_current_classroom')
+                                ->label('Set this classroom as current classroom?')
+                                ->boolean()
+                                ->default(true)
+                                ->grouped(),
+                            Select::make('school_year')
+                                ->required()
+                                ->options(fn()=>Helper::getSchoolYears()),
+                            Select::make('school_term')
+                                ->required()
+                                ->default(1)
+                                ->options(fn()=>Helper::getTerms()),
+                        ])
+                        ->columns(2)
+                    ])
+                    ->action(function(array $data,$livewire){
+                        DB::beginTransaction();
+                        try {
+                            $studentIds = $livewire->selectedTableRecords; #save student id so we an use it to update current_school/company in student table
+                            $getMainTeacher = MainTeacher::query()
+                            ->where('company_id',$data['company_id'])
+                            ->where('classroom_id',$data['classroom_id'])
+                            ->where('school_year',$data['school_year'])
+                            ->where('school_term',$data['school_term'])
+                            ->first()
+                            ;
+                            if($getMainTeacher == null){
+                                throw new \Exception('There is no Main Teacher for this selected data.');
+                            }
+
+                            foreach ($livewire->getSelectedTableRecords() as $record) {
+                                StudentClassroom::updateOrCreate(
+                                    [
+                                        'student_id'    => $record->id,
+                                        'school_year'   => $data['school_year'],
+                                        'school_term'   => $data['school_term'],
+                                    ],
+                                    [
+                                        'company_id'    => $data['company_id'],
+                                        'classroom_id'  => $data['classroom_id'],
+                                        'user_id'       => $getMainTeacher->user_id,
+                                    ]
+                                );
+                            }
+                            // update current_company/school in student tabel
+                            $update = [];
+                            if($data['set_current_school']){
+                                $update['company_id'] = $data['company_id'];
+                            }
+                            if($data['set_current_classroom']){
+                                $update['classroom_id'] = $data['classroom_id'];
+                            }
+                            Student::whereIn('id',$studentIds)->update($update);
+
+                            DB::commit();
+
+                            Notification::make()
+                                ->success()
+                                ->title('Successfully managed student classroom')
+                                ->send();
+                        } catch (\Throwable $th) {
+                            DB::rollback();
+                            Notification::make()
+                                ->danger()
+                                ->title($th->getMessage())
+                                ->send();
+                        }
+                    })
+                    ->deselectRecordsAfterCompletion(),
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
@@ -216,9 +323,23 @@ class StudentResource extends Resource
                 Section::make('School Details')
                 ->schema([
                     Select::make('company_id')
+                        ->disabledOn('edit')
+                        ->helperText(function(string $operation){
+                            if($operation != 'create'){
+                                return 'Edit this value via manage classroom';
+                            }
+                        })
                         ->label('Current School')
-                        ->unique(ignoreRecord: true)
                         ->relationship('company','name'),
+                    Select::make('classroom_id')
+                        ->disabledOn('edit')
+                        ->helperText(function(string $operation){
+                            if($operation != 'create'){
+                                return 'Edit this value via manage classroom';
+                            }
+                        })
+                        ->label('Current Classroom')
+                        ->relationship('classroom','name'),
                     Forms\Components\TextInput::make('previous_education')->maxLength(255),
                     Forms\Components\TextInput::make('joined_at_class')->maxLength(255),
                     Forms\Components\DatePicker::make('joined_at'),

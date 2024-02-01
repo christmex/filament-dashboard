@@ -82,6 +82,15 @@ class AdminPanelProvider extends PanelProvider
             ->unsavedChangesAlerts()
             // ->breadcrumbs(false)
             ->brandLogo(asset('logo_basic_digital.svg'))
-            ->brandLogoHeight('1rem');
+            ->brandLogoHeight('1rem')
+            ->colors([
+                'danger' => Color::Rose,
+                'gray' => Color::Gray,
+                'info' => Color::Blue,
+                'primary' => Color::Blue,
+                'success' => Color::Emerald,
+                'warning' => Color::Orange,
+            ]);
+            ;
     }
 }
