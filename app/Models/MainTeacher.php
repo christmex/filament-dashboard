@@ -21,4 +21,8 @@ class MainTeacher extends Model
     {
         return $this->belongsTo(Classroom::class);
     }
+    public function company() :BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
 }

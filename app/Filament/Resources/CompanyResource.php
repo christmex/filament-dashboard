@@ -27,11 +27,15 @@ class CompanyResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-            ]);
+            ->schema(self::getForm());
+    }
+
+    public static function getForm() :array{
+        return [
+            Forms\Components\TextInput::make('name')
+                ->required()
+                ->maxLength(255),
+        ];
     }
 
     public static function table(Table $table): Table

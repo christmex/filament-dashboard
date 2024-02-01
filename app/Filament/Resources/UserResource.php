@@ -125,6 +125,18 @@ class UserResource extends Resource
                                             }
                                         })
                                         ->schema([
+                                            Select::make('company_id')
+                                                ->label('School')
+                                                ->required()
+                                                ->relationship('company','name')
+                                                ->unique(modifyRuleUsing: function (Unique $rule,$state, Get $get) {
+                                                    return $rule
+                                                            ->where('school_term', $get('school_term'))
+                                                            ->where('school_year', $get('school_year'))
+                                                            ->where('classroom_id', $get('classroom_id'))
+                                                            ;
+                                                }, ignoreRecord:true)
+                                                ->createOptionForm(CompanyResource::getForm()),
                                             Select::make('classroom_id')
                                                 ->label('Classroom')
                                                 ->required()
@@ -147,11 +159,11 @@ class UserResource extends Resource
                                                     return $rule
                                                             ->where('school_term', $get('school_term'))
                                                             ->where('school_year', $get('school_year'))
+                                                            ->where('company_id', $get('company_id'))
                                                             // ->where('classroom_id',$state)
                                                             ;
-                                                })
-
-                                                ->createOptionForm(ClassroomResource::getForm()),
+                                                    }, ignoreRecord:true)
+                                                    ->createOptionForm(ClassroomResource::getForm()),
                                             Select::make('school_year')
                                                 ->required()
                                                 ->live(onBlur: true)
