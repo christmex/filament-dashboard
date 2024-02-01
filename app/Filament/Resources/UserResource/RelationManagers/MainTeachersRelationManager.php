@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\UserResource\RelationManagers;
 
-use App\Filament\Resources\CompanyResource;
 use Filament\Forms;
 use Filament\Tables;
 use App\Helpers\Helper;
@@ -10,11 +9,13 @@ use Filament\Forms\Get;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Spatie\Permission\Models\Role;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rules\Unique;
 use App\Filament\Resources\UserResource;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\CompanyResource;
 use App\Filament\Resources\ClassroomResource;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -52,7 +53,7 @@ class MainTeachersRelationManager extends RelationManager
                     ->relationship('company','name')
                     ->unique(modifyRuleUsing: function (Unique $rule,$state, Get $get) {
                         return $rule
-                                ->where('school_term', $get('school_term'))
+                                // ->where('school_term', $get('school_term'))
                                 ->where('school_year', $get('school_year'))
                                 ->where('classroom_id', $get('classroom_id'))
                                 ;
@@ -64,7 +65,7 @@ class MainTeachersRelationManager extends RelationManager
                     ->relationship('classroom','name')
                     ->unique(modifyRuleUsing: function (Unique $rule,$state, Get $get) {
                         return $rule
-                                ->where('school_term', $get('school_term'))
+                                // ->where('school_term', $get('school_term'))
                                 ->where('school_year', $get('school_year'))
                                 ->where('company_id', $get('company_id'))
                                 // ->where('classroom_id',$state)
@@ -75,10 +76,13 @@ class MainTeachersRelationManager extends RelationManager
                     ->required()
                     ->live(onBlur: true)
                     ->options(fn()=>Helper::getSchoolYears()),
-                Select::make('school_term')
-                    ->required()
-                    ->live(onBlur: true)
-                    ->options(fn()=>Helper::getTerms())
+                Hidden::make('school_term')->default(1)
+                // Select::make('school_term')
+                //     ->hidden(true)
+                //     ->default(1)
+                //     ->required()
+                //     ->live(onBlur: true)
+                //     ->options(fn()=>Helper::getTerms())
             ]);
     }
 
@@ -91,6 +95,7 @@ class MainTeachersRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('school_year')
                     ->formatStateUsing(fn (string $state): string =>  Helper::getSchoolYearById($state)),
                 Tables\Columns\TextColumn::make('school_term')
+                    ->hidden()
                     ->formatStateUsing(fn (string $state): string =>  Helper::getTermById($state)),
             ])
             ->filters([

@@ -8,6 +8,7 @@ use App\Helpers\Helper;
 use Filament\Forms\Get;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rules\Unique;
@@ -44,7 +45,7 @@ class TeacherSubjectsRelationManager extends RelationManager
                     ->relationship('company','name')
                     ->unique(modifyRuleUsing: function (Unique $rule,$state, Get $get) {
                         return $rule
-                                ->where('school_term', $get('school_term'))
+                                // ->where('school_term', $get('school_term'))
                                 ->where('school_year', $get('school_year'))
                                 ->where('classroom_id', $get('classroom_id'))
                                 ->where('subject_id', $get('subject_id'))
@@ -57,7 +58,7 @@ class TeacherSubjectsRelationManager extends RelationManager
                     ->relationship('classroom','name')
                     ->unique(modifyRuleUsing: function (Unique $rule,$state, Get $get) {
                         return $rule
-                                ->where('school_term', $get('school_term'))
+                                // ->where('school_term', $get('school_term'))
                                 ->where('school_year', $get('school_year'))
                                 ->where('company_id', $get('company_id'))
                                 ->where('subject_id', $get('subject_id'))
@@ -70,7 +71,7 @@ class TeacherSubjectsRelationManager extends RelationManager
                     ->relationship('subject','name')
                     ->unique(modifyRuleUsing: function (Unique $rule,$state, Get $get) {
                         return $rule
-                                ->where('school_term', $get('school_term'))
+                                // ->where('school_term', $get('school_term'))
                                 ->where('school_year', $get('school_year'))
                                 ->where('classroom_id', $get('classroom_id'))
                                 ->where('company_id', $get('company_id'))
@@ -81,17 +82,19 @@ class TeacherSubjectsRelationManager extends RelationManager
                     ->required()
                     ->live(onBlur: true)
                     ->options(fn()=>Helper::getSchoolYears()),
-                Select::make('school_term')
-                    ->required()
-                    ->live(onBlur: true)
-                    ->options(fn()=>Helper::getTerms())
+                Hidden::make('school_term')->default(1)
+                // Select::make('school_term')
+                //     ->required()
+                //     ->hidden(true)
+                //     ->default(1)
+                //     ->live(onBlur: true)
+                //     ->options(fn()=>Helper::getTerms())
             ]);
     }
 
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('id')
             ->columns([
                 Tables\Columns\TextColumn::make('company.name'),
                 Tables\Columns\TextColumn::make('classroom.name'),
@@ -99,6 +102,7 @@ class TeacherSubjectsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('school_year')
                     ->formatStateUsing(fn (string $state): string =>  Helper::getSchoolYearById($state)),
                 Tables\Columns\TextColumn::make('school_term')
+                    ->hidden()
                     ->formatStateUsing(fn (string $state): string =>  Helper::getTermById($state)),
             ])
             ->filters([
