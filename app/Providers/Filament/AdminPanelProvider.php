@@ -84,12 +84,15 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(asset('logo_basic_digital.svg'))
             ->brandLogoHeight('1rem')
             ->colors([
-                'danger' => Color::Rose,
+                // 'danger' => Color::Rose,
+                'danger' => '#e63946',
                 'gray' => Color::Gray,
-                'info' => Color::Blue,
+                // 'info' => Color::Blue,
+                'info' => '#457b9d',
                 'primary' => Color::Blue,
                 'success' => Color::Emerald,
-                'warning' => Color::Orange,
+                // 'warning' => Color::Orange,
+                'warning' => '#ffb703',
             ]);
             ;
     }
