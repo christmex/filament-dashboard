@@ -12,6 +12,7 @@ use Filament\Forms\Form;
 use App\Models\Classroom;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Resources\Pages\Page;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Group;
@@ -34,6 +35,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 use Filament\Resources\RelationManagers\RelationManager;
 use App\Filament\Resources\UserResource\RelationManagers;
+use Filament\Pages\SubNavigationPosition;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class UserResource extends Resource
@@ -46,6 +48,8 @@ class UserResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Employees';
     // protected static ?string $navigationLabel = 'Employees';
+
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Start;
 
     public static function form(Form $form): Form
     {
@@ -134,20 +138,10 @@ class UserResource extends Resource
                                             Select::make('school_year')
                                                 ->required()
                                                 ->live(onBlur: true)
-                                                // ->unique(modifyRuleUsing: function (Unique $rule, Get $get,$livewire, $state) {
-                                                //     return $rule->where('classroom_id', $get('classroom_id'))
-                                                //                 ->where('school_term', $get('school_term'))
-                                                //                 ;
-                                                // })
                                                 ->options(fn()=>Helper::getSchoolYears()),
                                             Select::make('school_term')
                                                 ->required()
                                                 ->live(onBlur: true)
-                                                // ->unique(modifyRuleUsing: function (Unique $rule, Get $get,$livewire) {
-                                                //     return $rule->where('school_year', $get('school_year'))
-                                                //                 ->where('classroom_id', $get('classroom_id'))
-                                                //                 ->where('user_id', $livewire->data['id']);
-                                                // },ignoreRecord:true)
                                                 ->options(fn()=>Helper::getTerms())
                                         ])
                                         ->columns(3)
@@ -160,16 +154,7 @@ class UserResource extends Resource
                             'sm' => 1,
                             'xl' => 2,
                         ]),
-                        // Forms\Components\Section::make('Status')
-                        //     ->collapsed()
-                        //     ->columns(2)
-                        //     ->schema([
-                        //         DatePicker::make('bpjs_join_date'),
-                        //         DatePicker::make('jht_join_date'),
-                        //         DatePicker::make('kemnaker_join_date'),
-                        //         DatePicker::make('read_employee_terms_date'),
-                        //         Textarea::make('notes')->columnSpanFull(),
-                        //     ]),
+                        
                         
                     ]),
 
@@ -310,7 +295,7 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\MainTeachersRelationManager::class,
         ];
     }
     
@@ -320,6 +305,7 @@ class UserResource extends Resource
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
+            'edit-status' => Pages\EditUserStatus::route('/{record}/edit/status'),
         ];
     }    
 
@@ -336,5 +322,12 @@ class UserResource extends Resource
         return [
             UserResource\Widgets\UserOverview::class,
         ];
+    }
+
+    public static function getRecordSubNavigation(Page $page): array
+    {
+        return $page->generateNavigationItems([
+            Pages\EditUserStatus::class,
+        ]);
     }
 }
