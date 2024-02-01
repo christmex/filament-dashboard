@@ -16,14 +16,17 @@ use App\Models\StudentClassroom;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Tabs;
+use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Split;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rules\Unique;
 use Filament\Notifications\Notification;
 use Filament\Tables\Enums\FiltersLayout;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\ToggleButtons;
@@ -127,17 +130,36 @@ class StudentResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
                 SelectFilter::make('company_id')
                     ->label('Current School')
+                    ->visible(fn()=> !auth()->user()->mainTeachers->count())
                     ->searchable()
                     ->multiple()
                     ->preload()
                     ->relationship('company', 'name'),
                 SelectFilter::make('classroom_id')
                     ->label('Current Classroom')
+                    ->visible(fn()=> !auth()->user()->mainTeachers->count())
                     ->searchable()
                     ->multiple()
                     ->preload()
-                    ->relationship('classroom', 'name')
+                    ->relationship('classroom', 'name'),
+                Filter::make('mainTeacher')
+                    ->visible(fn()=> auth()->user()->mainTeachers->count())
+                    // ->columnSpanFull()
+                    ->form([
+                        Select::make('class_of')
+                            ->options(function(){
+                                return auth()->user()->mainTeachers->pluck('full_label','id')->toArray();
+                            }),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        if($data['class_of'] == null){
+                            $data['class_of'] = auth()->user()->mainTeachers->first()->id;
+                        }
+                        $studentIds = Helper::getStudentIdsByMainTeacherId($data['class_of']);
+                        return $query->whereIn('id',$studentIds);
+                    })
             ], layout: FiltersLayout::Modal)
+            // ->filtersFormColumns(3)
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make(),
@@ -263,6 +285,7 @@ class StudentResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
+            ->ownStudent()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);

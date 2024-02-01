@@ -2,6 +2,9 @@
 
 namespace App\Helpers;
 
+use App\Models\MainTeacher;
+use App\Models\StudentClassroom;
+
 class Helper {
 
     public static $superUserEmail = 'super@sekolahbasic.sch.id';
@@ -70,6 +73,19 @@ class Helper {
     }
     public static function getReligionById($id){
         return self::getReligions()[$id];
+    }
+
+    public static function getStudentIdsByMainTeacherId($id) :array{
+        $getMainTeacher = MainTeacher::find($id);
+        $studentIds = StudentClassroom::query()
+            ->where('company_id',$getMainTeacher->company_id)
+            ->where('classroom_id',$getMainTeacher->classroom_id)
+            ->where('school_year',$getMainTeacher->school_year)
+            ->where('school_term',$getMainTeacher->school_term)
+            ->get()
+            ->pluck('student_id')
+            ->toArray();
+        return $studentIds;
     }
 
 }

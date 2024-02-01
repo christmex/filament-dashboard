@@ -279,6 +279,9 @@ class UserResource extends Resource
                     ->searchable(isIndividual:true,isGlobal:false),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(isIndividual:true,isGlobal:false),
+                Tables\Columns\TextColumn::make('roles.name')
+                    ->bulleted()
+                    ->searchable(isIndividual:true,isGlobal:false),
                 Tables\Columns\TextColumn::make('email_verified_at')
                     ->dateTime()
                     ->sortable()

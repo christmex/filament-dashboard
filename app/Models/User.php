@@ -80,7 +80,8 @@ class User extends Authenticatable implements FilamentUser
      */
     public function mainTeachers(): HasMany
     {
-        return $this->hasMany(MainTeacher::class);
+        // return $this->hasMany(MainTeacher::class);
+        return $this->hasMany(MainTeacher::class)->latest();
     }
 
     /**
@@ -90,4 +91,5 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasMany(TeacherSubject::class);
     }
+
 }

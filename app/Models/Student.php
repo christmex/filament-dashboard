@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,34 @@ class Student extends Model
         );
     }
 
+    
+    /**
+     * Scope a query to only include popular users.
+     */
+    public function scopeOwnStudent(Builder $query): void
+    {
+        $companyIds = [];
+        $classroomIds = [];
+        $schoolYears = [];
+        $schoolTerms = [];
+        $amainTeacher = MainTeacher::whereIn('id',auth()->user()->mainTeachers->pluck('id')->toArray())->get();
+        foreach ($amainTeacher as $key => $value) {
+            array_push($companyIds,$value->company_id);
+            array_push($classroomIds,$value->classroom_id);
+            array_push($schoolYears,$value->school_year);
+            array_push($schoolTerms,$value->school_term);
+        }
+        $studentIds = StudentClassroom::query()
+            ->whereIn('company_id',$companyIds)
+            ->whereIn('classroom_id',$classroomIds)
+            ->whereIn('school_year',$schoolYears)
+            ->whereIn('school_term',$schoolTerms)
+            ->get()
+            ->pluck('student_id')
+            ->toArray();
+        $query->whereIn('id',$studentIds);
+    }
+
     public function company() :BelongsTo{
         return $this->belongsTo(Company::class);
     }
@@ -34,4 +63,5 @@ class Student extends Model
     public function classrooms() :HasMany{
         return $this->hasMany(StudentClassroom::class);
     }
+    
 }
