@@ -12,6 +12,8 @@ class Helper {
     public static $userDependOnRoleMainTeacher = 'main_teacher';
     public static $userDependOnRoleTeacherSubject = 'teacher_subject';
 
+    public static $superAdminName = 'super_admin';
+
     public static function getSchoolYears() :array{
         $start = 2023;
         $range = 10;
