@@ -20,7 +20,7 @@ class ClassroomResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-m-chevron-double-down';
 
-    protected static ?string $navigationGroup = 'Master';
+    // protected static ?string $navigationGroup = 'Master';
 
     protected static ?string $cluster = Settings::class;
 

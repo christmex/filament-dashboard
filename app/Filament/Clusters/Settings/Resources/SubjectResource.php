@@ -78,9 +78,11 @@ class SubjectResource extends Resource
                     ->searchable(),
                 // Tables\Columns\TextColumn::make('code')
                 //     ->searchable(),
-                Tables\Columns\IconColumn::make('is_curiculum_basic')
-                    ->label('Curicullum Basic')
-                    ->boolean(),
+                // Tables\Columns\IconColumn::make('is_curiculum_basic')
+                //     ->label('Curicullum Basic')
+                //     ->boolean(),
+                Tables\Columns\ToggleColumn::make('is_curiculum_basic')
+                    ->label('Curicullum Basic'),
                 Tables\Columns\TextInputColumn::make('order')
                     ->rules(['required','integer','min:1'])
                     ->sortable(),
