@@ -209,9 +209,9 @@ class UserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                    ->searchable(isIndividual:true,isGlobal:false),
                 Tables\Columns\TextColumn::make('email')
-                    ->searchable(),
+                    ->searchable(isIndividual:true,isGlobal:false),
                 Tables\Columns\TextColumn::make('email_verified_at')
                     ->dateTime()
                     ->sortable()
@@ -225,14 +225,15 @@ class UserResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('citizenship_number')
-                    ->searchable(),
+                    ->searchable(isIndividual:true,isGlobal:false),
                 Tables\Columns\TextColumn::make('company.name')
-                    ->searchable(),
+                    ->searchable(isIndividual:true,isGlobal:false),
                 Tables\Columns\TextInputColumn::make('permanent_date')
                     ->type('date')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('join_date')
+                    ->searchable(isIndividual:true,isGlobal:false)
                     ->sortable(),
                 Tables\Columns\TextInputColumn::make('finish_contract')
                     ->type('date')
@@ -255,8 +256,7 @@ class UserResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('notes')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     // ->dateTime()
                     ->since()
