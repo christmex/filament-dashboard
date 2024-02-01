@@ -80,7 +80,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->topNavigation()
             ->unsavedChangesAlerts()
-            ->breadcrumbs(false)
+            // ->breadcrumbs(false)
             ->brandLogo(asset('logo_basic_digital.svg'))
             ->brandLogoHeight('1rem');
     }

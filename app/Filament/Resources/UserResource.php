@@ -39,6 +39,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use App\Filament\Resources\UserResource\RelationManagers;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use App\Filament\Resources\UserResource\RelationManagers\MainTeachersRelationManager;
+use App\Filament\Resources\UserResource\RelationManagers\TeacherSubjectsRelationManager;
 
 class UserResource extends Resource
 {
@@ -104,11 +105,77 @@ class UserResource extends Resource
                                 ->hiddenOn('create')
                                 ->schema([
                                     DatePicker::make('bpjs_join_date'),
-                                            DatePicker::make('jht_join_date'),
-                                            DatePicker::make('kemnaker_join_date'),
-                                            DatePicker::make('read_employee_terms_date'),
-                                            Textarea::make('notes')->columnSpanFull(),
+                                    DatePicker::make('jht_join_date'),
+                                    DatePicker::make('kemnaker_join_date'),
+                                    DatePicker::make('read_employee_terms_date'),
+                                    Textarea::make('notes')->columnSpanFull(),
                                 ]),
+                            Tabs\Tab::make('Teacher Subject')
+                                ->hiddenOn('edit')
+                                ->visible(function(Get $get){
+                                    return Role::whereIn('id',$get('roles'))->where('name',Helper::$userDependOnRoleTeacherSubject)->get()->count();
+                                })
+                                ->schema([
+                                    Repeater::make('teacherSubjects')
+                                        ->relationship()
+                                        ->maxItems(function(string $operation){
+                                            if($operation == 'create'){
+                                                return 1;
+                                            }
+                                        })
+                                        ->schema([
+                                            Select::make('company_id')
+                                                ->label('School')
+                                                ->required()
+                                                ->relationship('company','name')
+                                                ->unique(modifyRuleUsing: function (Unique $rule,$state, Get $get) {
+                                                    return $rule
+                                                            ->where('school_term', $get('school_term'))
+                                                            ->where('school_year', $get('school_year'))
+                                                            ->where('classroom_id', $get('classroom_id'))
+                                                            ->where('subject_id', $get('subject_id'))
+                                                            ;
+                                                }, ignoreRecord:true)
+                                                ->createOptionForm(CompanyResource::getForm()),
+                                            Select::make('classroom_id')
+                                                ->label('Classroom')
+                                                ->required()
+                                                ->relationship('classroom','name')
+                                                ->unique(modifyRuleUsing: function (Unique $rule,$state, Get $get) {
+                                                    return $rule
+                                                            ->where('school_term', $get('school_term'))
+                                                            ->where('school_year', $get('school_year'))
+                                                            ->where('company_id', $get('company_id'))
+                                                            ->where('subject_id', $get('subject_id'))
+                                                            ;
+                                                    }, ignoreRecord:true)
+                                                    ->createOptionForm(ClassroomResource::getForm()),
+                                            Select::make('subject_id')
+                                                ->label('Subject')
+                                                ->required()
+                                                ->relationship('subject','name')
+                                                ->unique(modifyRuleUsing: function (Unique $rule,$state, Get $get) {
+                                                    return $rule
+                                                            ->where('school_term', $get('school_term'))
+                                                            ->where('school_year', $get('school_year'))
+                                                            ->where('classroom_id', $get('classroom_id'))
+                                                            ->where('company_id', $get('company_id'))
+                                                            ;
+                                                }, ignoreRecord:true)
+                                                ->createOptionForm(CompanyResource::getForm()),
+                                            Select::make('school_year')
+                                                ->required()
+                                                ->live(onBlur: true)
+                                                ->options(fn()=>Helper::getSchoolYears()),
+                                            Select::make('school_term')
+                                                ->required()
+                                                ->live(onBlur: true)
+                                                ->options(fn()=>Helper::getTerms())
+                                        ])
+                                        ->columns(3)
+                                        ->columnSpanFull()
+                                ]),
+
                             Tabs\Tab::make('Main Teacher')
                                 ->hiddenOn('edit')
                                 ->visible(function(Get $get){
@@ -118,7 +185,7 @@ class UserResource extends Resource
                                     Repeater::make('mainTeachers')
                                         ->relationship()
                                         // ->disabled()
-                                        ->helperText(new HtmlString('Please Set User Role as <b>Main Teacher</b> first, if you want to enable this form.'))
+                                        // ->helperText(new HtmlString('Please Set User Role as <b>Main Teacher</b> first, if you want to enable this form.'))
                                         ->maxItems(function(string $operation){
                                             if($operation == 'create'){
                                                 return 1;
@@ -325,6 +392,7 @@ class UserResource extends Resource
     {
         return [
             MainTeachersRelationManager::class,
+            TeacherSubjectsRelationManager::class,
             // MainTeachersRelationManager::make([
             //     'current_operation' => $livewire,
             // ]),
