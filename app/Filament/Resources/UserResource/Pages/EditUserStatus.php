@@ -13,10 +13,10 @@ use Filament\Forms\Components\DatePicker;
 class EditUserStatus extends EditRecord
 {
     protected static string $resource = UserResource::class;
-
-    
- 
-    
+    public function hasCombinedRelationManagerTabsWithContent(): bool
+    {
+        return true;
+    }
 
     public function form(Form $form): Form
     {

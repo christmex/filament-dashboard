@@ -3,6 +3,7 @@
 use App\Helpers\Helper;
 use App\Models\Classroom;
 use Illuminate\Support\Facades\Route;
+use Spatie\Permission\Models\Role;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,6 +17,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/debug',function(){
-    dd(Classroom::all()->pluck('name','id')->toArray());
+    dd(Role::whereIn('id',[1,2,3])->where('name',Helper::$userDependOnRoleMainTeacher)->get()->count());
     // dd(auth()->user()->canImpersonate());
 });

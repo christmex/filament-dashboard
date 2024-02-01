@@ -30,3 +30,15 @@
     git restore .
 
 ```
+
+
+## TODO
+- [ ] Make custom command to setup the project for the first time, such as creating default role, install composer
+    - ``` composer install ```
+    - ``` cp .env.example .env ```
+    - ``` php artisan key:generate ```
+    - don't forget to change the APP_URL if ure using virtual env like laragon
+    - ``` php artisan migrate ```
+    - ## shield
+        - ``` php artisan shield:install ```
+    - etc

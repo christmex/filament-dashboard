@@ -14,6 +14,7 @@ use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\HtmlString;
+use Spatie\Permission\Models\Role;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Split;
@@ -27,6 +28,7 @@ use Illuminate\Validation\Rules\Unique;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Forms\Components\DatePicker;
+use Filament\Pages\SubNavigationPosition;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Filters\TernaryFilter;
@@ -35,8 +37,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 use Filament\Resources\RelationManagers\RelationManager;
 use App\Filament\Resources\UserResource\RelationManagers;
-use Filament\Pages\SubNavigationPosition;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
+use App\Filament\Resources\UserResource\RelationManagers\MainTeachersRelationManager;
 
 class UserResource extends Resource
 {
@@ -84,6 +86,7 @@ class UserResource extends Resource
                                         ->relationship('roles', 'name')
                                         ->multiple()
                                         ->preload()
+                                        ->live()
                                         ->searchable(),
                             ]),
                             Tabs\Tab::make('Details')
@@ -97,11 +100,25 @@ class UserResource extends Resource
                                         ->label('Current Company')
                                         ->relationship('company','name')
                             ]),
+                            Tabs\Tab::make('Status')
+                                ->hiddenOn('create')
+                                ->schema([
+                                    DatePicker::make('bpjs_join_date'),
+                                            DatePicker::make('jht_join_date'),
+                                            DatePicker::make('kemnaker_join_date'),
+                                            DatePicker::make('read_employee_terms_date'),
+                                            Textarea::make('notes')->columnSpanFull(),
+                                ]),
                             Tabs\Tab::make('Main Teacher')
                                 ->hiddenOn('edit')
+                                ->visible(function(Get $get){
+                                    return Role::whereIn('id',$get('roles'))->where('name',Helper::$userDependOnRoleMainTeacher)->get()->count();
+                                })
                                 ->schema([
                                     Repeater::make('mainTeachers')
                                         ->relationship()
+                                        // ->disabled()
+                                        ->helperText(new HtmlString('Please Set User Role as <b>Main Teacher</b> first, if you want to enable this form.'))
                                         ->maxItems(function(string $operation){
                                             if($operation == 'create'){
                                                 return 1;
@@ -295,7 +312,10 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\MainTeachersRelationManager::class,
+            MainTeachersRelationManager::class,
+            // MainTeachersRelationManager::make([
+            //     'current_operation' => $livewire,
+            // ]),
         ];
     }
     
@@ -305,9 +325,16 @@ class UserResource extends Resource
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
-            'edit-status' => Pages\EditUserStatus::route('/{record}/edit/status'),
+            // 'edit-status' => Pages\EditUserStatus::route('/{record}/edit/status'),
         ];
     }    
+
+    public static function getRecordSubNavigation(Page $page): array
+    {
+        return $page->generateNavigationItems([
+            // Pages\EditUserStatus::class,
+        ]);
+    }
 
     public static function getEloquentQuery(): Builder
     {
@@ -324,10 +351,5 @@ class UserResource extends Resource
         ];
     }
 
-    public static function getRecordSubNavigation(Page $page): array
-    {
-        return $page->generateNavigationItems([
-            Pages\EditUserStatus::class,
-        ]);
-    }
+
 }

@@ -6,6 +6,9 @@ class Helper {
 
     public static $superUserEmail = 'super@sekolahbasic.sch.id';
 
+    public static $userDependOnRoleMainTeacher = 'main_teacher';
+    public static $userDependOnRoleTeacherSubject = 'teacher_subject';
+
     public static function getSchoolYears() :array{
         $start = 2023;
         $range = 10;

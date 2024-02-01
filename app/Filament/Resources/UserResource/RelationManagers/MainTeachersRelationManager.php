@@ -8,8 +8,11 @@ use App\Helpers\Helper;
 use Filament\Forms\Get;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Spatie\Permission\Models\Role;
 use Filament\Forms\Components\Select;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rules\Unique;
+use App\Filament\Resources\UserResource;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ClassroomResource;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -19,9 +22,25 @@ class MainTeachersRelationManager extends RelationManager
 {
     protected static string $relationship = 'mainTeachers';
 
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass) : bool
+    {
+        return $ownerRecord->hasRole(Helper::$userDependOnRoleMainTeacher) ||$ownerRecord->mainTeachers->count();
+    }
+
+    public function isReadOnly(): bool
+    {
+        $ownerRecord = $this->getOwnerRecord();
+        // dd($ownerRecord->hasRole(Helper::$userDependOnRoleMainTeacher));
+        return !$ownerRecord->hasRole(Helper::$userDependOnRoleMainTeacher);
+    }
+
+
     public function form(Form $form): Form
     {
         return $form
+            // ->disabled(function(Get $get){
+            //     return true;
+            // })
             ->columns(3)
             ->schema([
                 Select::make('classroom_id')
