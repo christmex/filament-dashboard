@@ -118,7 +118,8 @@ class AssessmentResource extends Resource
                             ->label('Subject')
                             ->options(function(){
                                 return auth()->user()->teacherSubjects->pluck('full_label','id')->toArray();
-                            }),
+                            })
+                            ->searchable(),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         // $studentIds = Helper::getStudentIdsFromStudentClassroom($data['teacher_subject_id'], TeacherSubject::class);
@@ -135,7 +136,7 @@ class AssessmentResource extends Resource
                             ->where('school_year',$data->school_year)
                             ->where('school_term',$data->school_term)
                         ;
-                    }),
+                    })->columnSpanFull(),
                 SelectFilter::make('topic_setting')
                     ->preload()
                     ->visible(fn()=> auth()->user()->teacherSubjects->count())
@@ -146,6 +147,7 @@ class AssessmentResource extends Resource
                     ->relationship('assessmentMethodSetting', 'name'),
                 
             ], layout: FiltersLayout::Modal)
+            ->filtersFormColumns(2)
             ->deferFilters()
             ->actions([
                 // Tables\Actions\EditAction::make(),
