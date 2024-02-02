@@ -160,6 +160,7 @@ class StudentResource extends Resource
                     })
             ], layout: FiltersLayout::Modal)
             // ->filtersFormColumns(3)
+            ->deferFilters()
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make(),

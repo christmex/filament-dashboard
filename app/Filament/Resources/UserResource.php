@@ -127,6 +127,7 @@ class UserResource extends Resource
                                             Select::make('company_id')
                                                 ->label('School')
                                                 ->required()
+                                                ->helperText('Only one subject for the first time, you can add more after you create the data.')
                                                 ->relationship('company','name')
                                                 ->unique(modifyRuleUsing: function (Unique $rule,$state, Get $get) {
                                                     return $rule
@@ -373,6 +374,7 @@ class UserResource extends Resource
                         blank: fn (Builder $query) => $query,
                     )
             ], layout: FiltersLayout::Modal)
+            ->deferFilters()
             ->actions([
                 Impersonate::make(),
                 Tables\Actions\ActionGroup::make([
