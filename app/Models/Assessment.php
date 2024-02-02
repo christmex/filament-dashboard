@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Helpers\Helper;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -15,14 +16,14 @@ class Assessment extends Model
     /**
      * The "booted" method of the model.
      */
-    // protected static function booted(): void
-    // {
-    //     static::addGlobalScope('subjectUser', function (Builder $builder) {
-    //         if(auth()->id()){     
-    //             $builder->whereIn('subject_user_id',auth()->user()->activeSubjects->pluck('id')->toArray());
-    //         }
-    //     });
-    // }
+    protected static function booted(): void
+    {
+        static::addGlobalScope('teacherSubject', function (Builder $builder) {
+            if(auth()->id()){     
+                $builder->where('user_id',auth()->id());
+            }
+        });
+    }
 
     public function setTopicNameAttribute($value)
     {

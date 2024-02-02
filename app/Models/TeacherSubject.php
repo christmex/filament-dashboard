@@ -33,6 +33,6 @@ class TeacherSubject extends Model
 
     public function getFullLabelAttribute()
     {
-        return $this->company->name." - ".$this->classroom->name." - ".$this->subject->name." - ".Helper::getSchoolYearById($this->school_year);
+        return $this->company->name." - ".$this->classroom->name." - ".$this->subject->name." - ".Helper::getSchoolYearById($this->school_year)." - ".Helper::getTermById($this->school_term);
     }
 }

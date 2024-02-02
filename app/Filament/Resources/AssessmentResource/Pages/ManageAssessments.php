@@ -29,20 +29,6 @@ class ManageAssessments extends ManageRecords
                 Actions\Action::make('Single Class')
                 ->form([
                     Group::make([
-                        Select::make('topic_setting_id')
-                            ->relationship('topicSetting','name')
-                            ->required()
-                            ->searchable()
-                            ->helperText('Topic 1 also called Chapter 1 or bab 1, etc, they are all the same 🤩')
-                            ->preload(),
-                        TextInput::make('topic_name')
-                            ->helperText('Format : (Assessment Method Setting Name) - (Topic Name) | Example: Penugasan 1 - Berhitung 1-10')
-                            ->required(),  
-                        Select::make('assessment_method_setting_id')
-                            ->relationship('assessmentMethodSetting','name')
-                            ->required()
-                            ->searchable()
-                            ->preload(),
                         Select::make('teacher_subject_id')
                             ->label('subject')
                             ->options(function(){
@@ -51,8 +37,25 @@ class ManageAssessments extends ManageRecords
                             ->required()
                             ->searchable()
                             ->live()
+                            ->columnSpanFull()
                             ->selectablePlaceholder(false)
                             ,
+                        TextInput::make('topic_name')
+                            ->helperText('Format : (Assessment Method Setting Name) - (Topic Name) | Example: Penugasan 1 - Berhitung 1-10')
+                            ->columnSpanFull()
+                            ->required(),  
+                        Select::make('topic_setting_id')
+                            ->relationship('topicSetting','name')
+                            ->required()
+                            ->searchable()
+                            ->helperText('Topic 1 also called Chapter 1 or bab 1, etc, they are all the same 🤩')
+                            ->preload(),
+                        Select::make('assessment_method_setting_id')
+                            ->relationship('assessmentMethodSetting','name')
+                            ->required()
+                            ->searchable()
+                            ->preload(),
+                        
                         CheckboxList::make('student_id')
                             ->label('Students')
                             ->options(function(Get $get){

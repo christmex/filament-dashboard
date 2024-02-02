@@ -2,17 +2,22 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\AssessmentResource\Pages;
-use App\Filament\Resources\AssessmentResource\RelationManagers;
-use App\Helpers\Helper;
-use App\Models\Assessment;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Helpers\Helper;
+use Filament\Forms\Form;
+use App\Models\Assessment;
 use Filament\Tables\Table;
+use App\Models\TeacherSubject;
+use Filament\Resources\Resource;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\AssessmentResource\Pages;
+use App\Filament\Resources\AssessmentResource\RelationManagers;
 
 class AssessmentResource extends Resource
 {
@@ -106,8 +111,42 @@ class AssessmentResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
-            ])
+                Filter::make('subject')
+                    ->visible(fn()=> auth()->user()->teacherSubjects->count())
+                    ->form([
+                        Select::make('teacher_subject_id')
+                            ->label('Subject')
+                            ->options(function(){
+                                return auth()->user()->teacherSubjects->pluck('full_label','id')->toArray();
+                            }),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        // $studentIds = Helper::getStudentIdsFromStudentClassroom($data['teacher_subject_id'], TeacherSubject::class);
+                        if($data['teacher_subject_id'] == null){
+                            return $query->where('user_id',auth()->id());
+                        }
+                        $data = TeacherSubject::find($data['teacher_subject_id']);
+
+                        return $query
+                            ->where('user_id',$data->user_id)
+                            ->where('company_id',$data->company_id)
+                            ->where('classroom_id',$data->classroom_id)
+                            ->where('subject_id',$data->subject_id)
+                            ->where('school_year',$data->school_year)
+                            ->where('school_term',$data->school_term)
+                        ;
+                    }),
+                SelectFilter::make('topic_setting')
+                    ->preload()
+                    ->visible(fn()=> auth()->user()->teacherSubjects->count())
+                    ->relationship('topicSetting', 'name'),
+                SelectFilter::make('assessmentMethodSetting')
+                    ->preload()
+                    ->visible(fn()=> auth()->user()->teacherSubjects->count())
+                    ->relationship('assessmentMethodSetting', 'name'),
+                
+            ], layout: FiltersLayout::Modal)
+            ->deferFilters()
             ->actions([
                 // Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()->label(''),
@@ -116,7 +155,9 @@ class AssessmentResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->paginated([10,20,50])
+            ->defaultPaginationPageOption(10);
     }
 
     public static function getPages(): array
@@ -125,4 +166,5 @@ class AssessmentResource extends Resource
             'index' => Pages\ManageAssessments::route('/'),
         ];
     }
+
 }
