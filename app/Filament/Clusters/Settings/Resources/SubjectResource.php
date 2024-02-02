@@ -22,6 +22,8 @@ class SubjectResource extends Resource
 
     protected static ?string $cluster = Settings::class;
 
+    protected static ?string $navigationGroup = 'Raport Merdeka';
+
     public static function form(Form $form): Form
     {
         return $form

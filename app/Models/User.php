@@ -89,7 +89,8 @@ class User extends Authenticatable implements FilamentUser
      */
     public function teacherSubjects(): HasMany
     {
-        return $this->hasMany(TeacherSubject::class);
+        // return $this->hasMany(TeacherSubject::class);
+        return $this->hasMany(TeacherSubject::class)->latest();
     }
 
 }

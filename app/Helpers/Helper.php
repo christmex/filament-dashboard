@@ -3,16 +3,27 @@
 namespace App\Helpers;
 
 use App\Models\MainTeacher;
+use App\Models\TeacherSubject;
 use App\Models\StudentClassroom;
+use Illuminate\Database\Eloquent\Model;
 
 class Helper {
 
     public static $superUserEmail = 'super@sekolahbasic.sch.id';
-
     public static $userDependOnRoleMainTeacher = 'main_teacher';
     public static $userDependOnRoleTeacherSubject = 'teacher_subject';
-
     public static $superAdminName = 'super_admin';
+
+    // Static data
+    public static function getAssessmentMethodSettings(){
+        return [
+            'Tes Lisan',
+            'Penugasan',
+            'Kinerja(Project, Portofolio, Rubrik)',
+            'Monthly Test',
+        ];
+    }
+    // Static data
 
     public static function getSchoolYears() :array{
         $start = 2023;
@@ -77,17 +88,39 @@ class Helper {
         return self::getReligions()[$id];
     }
 
+    /**
+     * @deprecated This function is deprecated and will be removed in future versions.
+     *             Please use the getStudentIdsFromStudentClassroom() method instead.
+     */
     public static function getStudentIdsByMainTeacherId($id) :array{
-        $getMainTeacher = MainTeacher::find($id);
+        $data = MainTeacher::find($id);
         $studentIds = StudentClassroom::query()
-            ->where('company_id',$getMainTeacher->company_id)
-            ->where('classroom_id',$getMainTeacher->classroom_id)
-            ->where('school_year',$getMainTeacher->school_year)
-            ->where('school_term',$getMainTeacher->school_term)
+            ->where('company_id',$data->company_id)
+            ->where('classroom_id',$data->classroom_id)
+            ->where('school_year',$data->school_year)
+            ->where('school_term',$data->school_term)
             ->get()
             ->pluck('student_id')
             ->toArray();
         return array_unique($studentIds);
+    }
+    public static function getStudentIdsFromStudentClassroom($id, $model) :array{
+        $data = $model::find($id);
+        if(!empty($data)){
+            $studentIds = StudentClassroom::query()
+                ->where('company_id',$data->company_id)
+                ->where('classroom_id',$data->classroom_id)
+                ->where('school_year',$data->school_year)
+                ->where('school_term',$data->school_term)
+                ->get()
+                ->pluck('student_id')
+                ->toArray();
+            if(count($studentIds)){
+                return array_unique($studentIds);
+            }
+        }
+        return [];
+        
     }
 
 }

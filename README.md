@@ -42,3 +42,4 @@
     - ## shield
         - ``` php artisan shield:install ```
     - etc
+- [ ] Add softdelete in company table

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\Helper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -28,5 +29,10 @@ class TeacherSubject extends Model
     public function subject() :BelongsTo
     {
         return $this->belongsTo(Subject::class);
+    }
+
+    public function getFullLabelAttribute()
+    {
+        return $this->subject->name." - ".$this->company->name." - ".$this->classroom->name." - ".Helper::getSchoolYearById($this->school_year);
     }
 }

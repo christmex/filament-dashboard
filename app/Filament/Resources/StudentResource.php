@@ -38,7 +38,7 @@ class StudentResource extends Resource
 {
     protected static ?string $model = Student::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
     public static function form(Form $form): Form
     {
@@ -149,14 +149,15 @@ class StudentResource extends Resource
                         Select::make('class_of')
                             ->options(function(){
                                 return auth()->user()->mainTeachers->pluck('full_label','id')->toArray();
-                            }),
+                            })
+                            ,
                     ])
                     ->query(function (Builder $query, array $data): Builder {
-                        if($data['class_of'] == null){
-                            $data['class_of'] = auth()->user()->mainTeachers->first()->id;
-                        }
-                        $studentIds = Helper::getStudentIdsByMainTeacherId($data['class_of']);
-                        return $query->whereIn('id',array_unique($studentIds));
+                        // if($data['class_of'] == null){
+                        //     $data['class_of'] = auth()->user()->mainTeachers->first()->id;
+                        // }
+                        $studentIds = Helper::getStudentIdsFromStudentClassroom($data['class_of'], MainTeacher::class);
+                        return $query->whereIn('id',$studentIds);
                     })
             ], layout: FiltersLayout::Modal)
             // ->filtersFormColumns(3)
