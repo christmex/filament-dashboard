@@ -15,6 +15,7 @@ use Filament\Forms\Components\Select;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use App\Tables\Columns\GradingTextInputColumn;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\AssessmentResource\Pages;
 use App\Filament\Resources\AssessmentResource\RelationManagers;
@@ -97,9 +98,10 @@ class AssessmentResource extends Resource
                     ->formatStateUsing(fn (string $state): string => Helper::getSchoolYearById($state)),
                 Tables\Columns\TextColumn::make('topic_name')
                     ->searchable(isIndividual:true, isGlobal:false),
-                Tables\Columns\TextColumn::make('grading')
+                GradingTextInputColumn::make('grading')
+                    ->type('number')
                     ->searchable(isIndividual:true, isGlobal:false)
-                    ->numeric()
+                    ->rules(['nullable','integer','min:0', 'max:100'])
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
