@@ -89,7 +89,7 @@ class AdminPanelProvider extends PanelProvider
                 'gray' => Color::Gray,
                 // 'info' => Color::Blue,
                 'info' => '#457b9d',
-                'primary' => Color::Blue,
+                'primary' => '#E65C00',
                 'success' => Color::Emerald,
                 // 'warning' => Color::Orange,
                 'warning' => '#ffb703',
